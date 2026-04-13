@@ -25,22 +25,12 @@ final class ApiAuthController extends AbstractController
     ) {}
 
     #[Route('/login', name: 'login', methods: ['POST'])]
-    public function index(
-        #[CurrentUser] ?User $user,
-        JWTTokenManagerInterface $jwtManager
-    ): Response {
-        if (null === $user) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
-
-        $token = $jwtManager->create($user);
-
-        return $this->json([
-            'user'  => $user->getUserIdentifier(),
-            'token' => $token,
-        ], Response::HTTP_OK);
+    public function login(#[CurrentUser] ?User $user): Response
+    {
+        // Cette méthode ne sera jamais exécutée
+        // Le firewall json_login intercepte la requête avant
+        // et lexik gère success/failure automatiquement
+        throw new \LogicException('Ne devrait pas être appelé directement.');
     }
 
     // -------------------------
@@ -59,9 +49,8 @@ final class ApiAuthController extends AbstractController
 
         $email    = $data['email'] ?? null;
         $password = $data['password'] ?? null;
-        $username = $data['username'] ?? null;
 
-        if (!$email || !$password || !$username) {
+        if (!$email || !$password) {
             return $this->json([
                 'message' => 'email, username et password sont requis',
             ], Response::HTTP_BAD_REQUEST);
@@ -105,26 +94,6 @@ final class ApiAuthController extends AbstractController
             'user'    => $user->getUserIdentifier(),
             'token'   => $token,
         ], Response::HTTP_CREATED);
-    }
-
-    // -------------------------
-    // LOGIN
-    // -------------------------
-    #[Route('/login', name: 'login', methods: ['POST'])]
-    public function login(#[CurrentUser] ?User $user): Response
-    {
-        if (null === $user) {
-            return $this->json([
-                'message' => 'Identifiants invalides',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
-
-        $token = $this->jwtManager->create($user);
-
-        return $this->json([
-            'user'  => $user->getUserIdentifier(),
-            'token' => $token,
-        ], Response::HTTP_OK);
     }
 
     // -------------------------
