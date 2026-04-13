@@ -16,7 +16,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
     /**
@@ -31,6 +31,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+    #[ORM\OneToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Chauffeur $chauffeur = null;
+
+    #[ORM\OneToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Client $client = null;
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -43,8 +52,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setEmail(string $email): static
     {
-        $this->email = $email;
-
+        $this->email = strtolower($email);
         return $this;
     }
 
@@ -95,6 +103,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getChauffeur(): ?Chauffeur
+    {
+        return $this->chauffeur;
+    }
+
+    public function setChauffeur(?Chauffeur $chauffeur): static
+    {
+        $this->chauffeur = $chauffeur;
+        return $this;
+    }
+
+    public function getClient(): ?Client
+    {
+        return $this->client;
+    }
+
+    public function setClient(?Client $client): static
+    {
+        $this->client = $client;
+        return $this;
+    }
+
     /**
      * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.
      */
@@ -110,5 +140,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function eraseCredentials(): void
     {
         // @deprecated, to be removed when upgrading to Symfony 8
+    }
+
+    public function isChauffeur(): bool
+    {
+        return in_array('ROLE_CHAUFFEUR', $this->getRoles());
+    }
+
+    public function isClient(): bool
+    {
+        return in_array('ROLE_CLIENT', $this->getRoles());
     }
 }
